@@ -7,7 +7,7 @@ It aims to address the global challenge on Food Loss, and reducing the impact of
 
 This MVP demonstrates **role-based access, authentication, and basic CRUD operations** using Django & Django REST Framework.
 
----
+---------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## 🛠️ Tech Stack
 
@@ -17,7 +17,7 @@ This MVP demonstrates **role-based access, authentication, and basic CRUD operat
 - **Testing:** DRF `APITestCase`  
 - **Pillow:** (for image uploads)
 
----
+---------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## ⚡ Features
 
@@ -48,7 +48,7 @@ This MVP demonstrates **role-based access, authentication, and basic CRUD operat
   - Role-based restrictions
   - Image upload
 
----
+---------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## 📝 API Endpoints
 
@@ -75,7 +75,7 @@ This MVP demonstrates **role-based access, authentication, and basic CRUD operat
 | `/orders/{id}/` | GET | Retrieve order details |
 | `/orders/{id}/` | DELETE | Delete order (owner only) |
 
----
+---------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## ⚙️ Setup Instructions
 
@@ -85,15 +85,52 @@ git clone https://github.com/yourusername/harvestplace.git
 cd harvestplace
 
 2. **Create Virtual Environment**
-
+source .venv/bin/activate  # Linux/Mac
+.venv\Scripts\activate     # Windows
 
 3. **Install Dependencies**
-
+pip install -r requirements.txt
 
 4. **Run Migrations & Run Server**
-
+pip install -r requirements.txt
+python manage.py runserver
 
 5. **Run Test**
 ```Ensure that the App behaves as outlined in Features above.```
+python manage.py test
 
-6. **
+
+## Usage Example
+### Register a Farmer
+POST /register/
+```{```
+```    "username": "john",```
+```    "email": "john@example.com",```
+```    "password": "pass1234",```
+```    "role": "farmer",```
+```    "location": "Lagos"```
+```}```
+
+POST /api-token-auth/
+```{```
+```    "email": "john@example.com",```
+```    "password": "pass1234"```
+```}```
+
+Create a Product (Farmer only)
+POST /products/
+Authorization: Token <### ### ###>
+```{```
+```    "name": "Tomatoes",```
+```    "category": "Vegetable",```
+```    "location": "Lagos",```
+```    "price": 100,```
+```    "image": <file>```
+```}```
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+## License
+________________________________________________________
+MIT License
+________________________________________________________
