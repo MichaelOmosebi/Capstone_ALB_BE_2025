@@ -1,37 +1,31 @@
 from rest_framework import serializers
-from django.contrib.auth import authenticate
-from .models import User
+from .models import CustomUser, Profile
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['phone_number', 'bio', 'avatar']
+
+class UserSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer(read_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'role', 'location', 'profile']
+
+class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     class Meta:
-        model = User
+        model = CustomUser
         fields = ['username', 'email', 'password', 'role', 'location']
 
     def create(self, validated_data):
-        user = User.objects.create_user(
+        user = CustomUser.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password'],
             role=validated_data['role'],
-            location=validated_data.get('location', None)
+            location=validated_data.get('location', '')
         )
         return user
-
-
-class UserLoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
-
-    def validate(self, attrs):
-        user = authenticate(username=attrs.get('username'), password=attrs.get('password'))
-        if not user:
-            raise serializers.ValidationError('Invalid username or password')
-        attrs['user'] = user
-        return attrs
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'role', 'location']

@@ -1,0 +1,7 @@
+[
+  {"model": "marketplace.category", "pk": 1, "fields": {"name": "Vegetables"}},
+  {"model": "marketplace.category", "pk": 2, "fields": {"name": "Fruits"}},
+  {"model": "marketplace.category", "pk": 3, "fields": {"name": "Grains"}},
+  {"model": "marketplace.category", "pk": 4, "fields": {"name": "Livestock"}},
+  {"model": "marketplace.category", "pk": 5, "fields": {"name": "Other"}}
+]
