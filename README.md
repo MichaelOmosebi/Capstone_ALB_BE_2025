@@ -1,5 +1,4 @@
 # HarvestPlace - Agriculture Marketplace API (MVP)
-# HarvestPlace API
 
 HarvestPlace is a **backend API** for a simple agricultural marketplace. Farmers can list postharvest products, and retailers can browse and place orders quickly and effectively.
 
