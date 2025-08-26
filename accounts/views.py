@@ -35,7 +35,7 @@ class LoginView(ObtainAuthToken):
         token = Token.objects.get(key=response.data['token'])
         return Response({'token': token.key, 'user_id': token.user_id, 'role': token.user.role})
 
-class ProfileView(generics.RetrieveUpdateAPIView):
+class ProfileRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
 
