@@ -12,6 +12,23 @@ class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = RegisterSerializer
 
+    def create(self, request, *args, **kwargs):
+        # Use the serializer to validate and save user
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        # Generate token for the new user
+        token, created = Token.objects.get_or_create(user=user)
+
+        # Prepare custom response with token
+        return Response({
+            'user': serializer.data,
+            'token': token.key
+        }, status=status.HTTP_201_CREATED)
+
+
+
 class LoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)

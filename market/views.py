@@ -7,23 +7,13 @@ from .models import Product, Order
 from .serializers import ProductSerializer, OrderSerializer
 from rest_framework.exceptions import PermissionDenied
 
-class IsFarmerOwner(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return obj.farmer == request.user
-
-class IsFarmerOrRetailer(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return (
-            request.user.is_authenticated 
-            and request.user.role in ['farmer', 'retailer']
-        )
 
 from rest_framework import viewsets, permissions, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import PermissionDenied
 from .models import Product
 from .serializers import ProductSerializer
-from .permissions import IsFarmerOwner
+from .permissions import IsFarmerOwner, IsFarmerOrRetailer, IsOrderOwner
 
 class ProductViewSet(viewsets.ModelViewSet):
     """
@@ -71,8 +61,6 @@ class ProductViewSet(viewsets.ModelViewSet):
         return [permissions.AllowAny()]
 
 
-
-
 # class OrderCreateView(generics.CreateAPIView):
 #     queryset = Order.objects.all()
 #     serializer_class = OrderSerializer
@@ -85,13 +73,6 @@ class ProductViewSet(viewsets.ModelViewSet):
 #         product.stock -= serializer.validated_data['quantity']
 #         product.save()
 
-
-class IsOrderOwner(permissions.BasePermission):
-    """
-    Only the user who created the order can update/delete it.
-    """
-    def has_object_permission(self, request, view, obj):
-        return obj.retailer == request.user
 
 class OrderListCreateView(generics.ListCreateAPIView):
     """
