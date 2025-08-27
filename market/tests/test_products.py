@@ -1,36 +1,58 @@
-from rest_framework.test import APITestCase
+# market/tests/test_products.py
+from rest_framework.test import APITestCase, APIClient
 from django.urls import reverse
-from market.models import Product, CustomUser
-from rest_framework import status
-from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.auth import get_user_model
+from market.models import Category, Product
 
-class ProductAPITestCase(APITestCase):
+User = get_user_model()
+
+class ProductAPITest(APITestCase):
     def setUp(self):
-        self.farmer = CustomUser.objects.create_user(
-            username="farmer1", password="password123", role="farmer"
+        self.client = APIClient()
+        self.farmer = User.objects.create_user(
+            email="farmer@example.com",
+            password="password123",
+            role="farmer"
         )
-        self.retailer = CustomUser.objects.create_user(
-            username="retailer1", password="password123", role="retailer"
+        self.retailer = User.objects.create_user(
+            email="retailer@example.com",
+            password="password123",
+            role="retailer"
         )
-        self.product_url = reverse("product-list")
+        self.category = Category.objects.create(name="Fruits")
+        self.product = Product.objects.create(
+            farmer=self.farmer,
+            name="Tomatoes",
+            description="Fresh tomatoes",
+            price=500,
+            stock=10,
+            location="Lagos",
+            category=self.category
+        )
 
-    def test_farmer_can_create_product_with_image(self):
-        self.client.login(username="farmer1", password="password123")
-        image = SimpleUploadedFile("tomatoes.jpg", b"file_content", content_type="image/jpeg")
+    def test_list_products(self):
+        url = reverse('product-list')  # matches your router name
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertGreaterEqual(len(response.data), 1)
 
+    def test_create_product_only_farmer(self):
+        url = reverse('product-list')
         data = {
-            "name": "Tomatoes",
-            "category": "Vegetables",
-            "location": "Lagos",
-            "price": "250.00",
-            "image": image,
+            "name": "Onions",
+            "description": "Organic onions",
+            "price": 1000,
+            "stock": 20,
+            "location": "Abuja",
+            "category": self.category.id
         }
-        response = self.client.post(self.product_url, data, format="multipart")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Product.objects.count(), 1)
+        # Try as retailer → should fail
+        self.client.force_authenticate(user=self.retailer)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 403)
 
-    def test_retailer_cannot_create_product(self):
-        self.client.login(username="retailer1", password="password123")
-        data = {"name": "Pepper", "category": "Vegetables", "location": "Lagos", "price": "300.00"}
-        response = self.client.post(self.product_url, data)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # Try as farmer → should succeed
+        self.client.force_authenticate(user=self.farmer)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['name'], "Onions")

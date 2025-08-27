@@ -46,3 +46,10 @@ class IsFarmerOwner(BasePermission):
     """
     def has_object_permission(self, request, view, obj):
         return obj.farmer == request.user
+    
+class IsFarmerUser(BasePermission):
+    """
+    Allows access only to users with farmer role.
+    """
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == 'farmer'
