@@ -1,6 +1,11 @@
 from rest_framework import permissions
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 
-class IsOrderOwner(permissions.BasePermission):
+class ReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        return request.method in SAFE_METHODS
+
+class IsOrderOwner(BasePermission):
     """
     Only the user who created the order can update/delete it.
     """
@@ -9,7 +14,7 @@ class IsOrderOwner(permissions.BasePermission):
     
 
 
-class IsFarmerOwner(permissions.BasePermission):
+class IsFarmerOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.farmer == request.user
 

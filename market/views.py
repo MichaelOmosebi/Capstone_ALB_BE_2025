@@ -3,17 +3,27 @@ from django.shortcuts import render
 # Create your views here.
 from rest_framework import viewsets, permissions, filters, generics
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Product, Order
-from .serializers import ProductSerializer, OrderSerializer
+from .models import Product
+from .serializers import ProductSerializer, CategorySerializer
 from rest_framework.exceptions import PermissionDenied
 
 
 from rest_framework import viewsets, permissions, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import PermissionDenied
-from .models import Product
+from .models import Product, Category
 from .serializers import ProductSerializer
-from .permissions import IsFarmerOwner, IsFarmerOrRetailer, IsOrderOwner
+from .permissions import IsFarmerOwner, IsFarmerOrRetailer, IsOrderOwner, ReadOnly
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    """
+    Handles CRUD for Categories.
+    - Anyone can list/retrieve categories
+    - Only admin can create/update/delete categories
+    """
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAdminUser | ReadOnly]
 
 class ProductViewSet(viewsets.ModelViewSet):
     """
@@ -72,50 +82,3 @@ class ProductViewSet(viewsets.ModelViewSet):
 #         product = serializer.validated_data['product']
 #         product.stock -= serializer.validated_data['quantity']
 #         product.save()
-
-
-class OrderListCreateView(generics.ListCreateAPIView):
-    """
-    GET -> List all orders (auth required)
-    POST -> Create a new order (Farmer or Retailer)
-    """
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    # 🔍 Enable search, filtering, and ordering
-    filter_backends = [filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter]
-    # Searchable fields
-    search_fields = ["product__name", "buyer__username"]
-    # Filterable fields
-    filterset_fields = ["status", "product"]
-    # Allow ordering
-    ordering_fields = ["created_at", "quantity"]
-
-    def perform_create(self, serializer):
-        # Automatically assign the logged-in user as the buyer
-        serializer.save(buyer=self.request.user)
-
-        # 🚫 Prevent farmers from ordering their own product
-        if self.request.user == product.farmer:
-            raise PermissionDenied("You cannot order your own product.")
-        
-        # Decrement product stock
-        product = serializer.validated_data['product']
-        product.stock -= serializer.validated_data['quantity']
-        product.save()
-
-
-class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    GET -> Retrieve a single order
-    PUT/PATCH -> Update an order (only if user is owner)
-    DELETE -> Cancel an order (only if user is owner)
-    """
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
-
-    def get_permissions(self):
-        if self.request.method in ["PUT", "PATCH", "DELETE"]:
-            return [permissions.IsAuthenticated(), IsOrderOwner()]
-        return [permissions.IsAuthenticated()]

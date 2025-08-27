@@ -38,15 +38,15 @@ class Product(models.Model):
         return self.name
 
 
-class Order(models.Model):
-    retailer = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='orders'
-    )
-    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name='orders')
-    quantity = models.PositiveIntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
+# class Order(models.Model):
+#     retailer = models.ForeignKey(
+#         settings.AUTH_USER_MODEL,
+#         on_delete=models.CASCADE,
+#         related_name='orders-retailer'
+#     )
+#     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name='orders-retailer')
+#     quantity = models.PositiveIntegerField()
+#     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Order {self.id} by {self.retailer.username} for {self.product.name}"
+#     def __str__(self):
+#         return f"Order {self.id} by {self.retailer.username} for {self.product.name}"
