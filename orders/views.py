@@ -4,6 +4,7 @@ from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from .models import Order
 from .serializers import OrderSerializer, OrderStatusUpdateSerializer
+from rest_framework.exceptions import ValidationError
 
 # ✅ Create new order
 class OrderCreateView(generics.CreateAPIView):
@@ -42,24 +43,26 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
 # ✅ Cancel order (only buyer can cancel)
 from rest_framework.views import APIView
 
-class OrderCancelView(APIView):
+class OrderCancelAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
-        order = get_object_or_404(Order, pk=pk)
-        user = request.user
-
-        if order.buyer != user:
-            raise PermissionDenied("You can only cancel your own order.")
-        if order.status != "pending":
-            return Response({"error": "Only pending orders can be canceled."}, status=status.HTTP_400_BAD_REQUEST)
-
-        order.status = "canceled"
-        order.save()
-        return Response({"message": "Order canceled successfully."}, status=status.HTTP_200_OK)
+        order = Order.objects.get(pk=pk, buyer=request.user)
+        serializer = OrderSerializer()
+        try:
+            serializer.cancel_order(order)
+        except ValidationError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "Order canceled and stock restored."}, status=status.HTTP_200_OK)
 
 # ✅ Admin/Staff update status
-class OrderStatusUpdateView(generics.UpdateAPIView):
+class OrderStatusUpdateAPIView(generics.UpdateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderStatusUpdateSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff or user.is_superuser:
+            return Order.objects.all()
+        return Order.objects.filter(buyer=user)
