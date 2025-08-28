@@ -7,21 +7,16 @@ from .serializers import OrderSerializer, OrderStatusUpdateSerializer
 from rest_framework.exceptions import ValidationError
 
 # ✅ Create new order
-class OrderCreateView(generics.CreateAPIView):
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-# ✅ List orders
-class OrderListView(generics.ListAPIView):
+# Buyer-facing endpoints
+class OrderListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
         if user.is_staff or user.is_superuser:
-            return Order.objects.all()  # Staff/Admin can see all
-        return Order.objects.filter(buyer=user)  # Buyer sees only own orders
+            return Order.objects.all()
+        return Order.objects.filter(buyer=user)
 
 # ✅ Order details (retrieve, update, delete by buyer)
 class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):

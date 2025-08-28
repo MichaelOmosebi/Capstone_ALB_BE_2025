@@ -4,6 +4,7 @@ from django.db import models
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
+from django.utils import timezone
 
 class Category(models.Model):
     name = models.CharField(max_length=80, unique=True)
@@ -32,23 +33,25 @@ class Product(models.Model):
         related_name='products'
     )
     name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    slug = models.SlugField(max_length=255, editable=False)
     description = models.TextField(blank=True)
+    harvest_date = models.DateField(default=timezone.now)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     stock = models.DecimalField(max_digits=10, decimal_places=2)  # Allows fractional units
     unit = models.CharField(max_length=50, default='kg')  # e.g., kg, liter, bag
     location = models.CharField(max_length=120)
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.PROTECT,
-        related_name='products'
-    )
+    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='products')
+    
+
     image = models.ImageField(upload_to='products/', blank=True, null=True)
     tags = models.CharField(max_length=255, blank=True)  # comma-separated tags for filtering
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('farmer', 'slug', 'harvest_date')  # Unique per farmer
 
     @property
     def in_stock(self):
@@ -56,11 +59,18 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            # Check uniqueness per farmer
+            while Product.objects.filter(farmer=self.farmer, slug=slug).exists():
+                counter += 1
+                slug = f"{base_slug}-{counter}"
+            self.slug = slug
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.harvest_date})"
 
 
 

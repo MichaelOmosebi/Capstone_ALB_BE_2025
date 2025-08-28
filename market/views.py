@@ -8,12 +8,17 @@ from .serializers import ProductSerializer, CategorySerializer
 from rest_framework.exceptions import PermissionDenied
 
 
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions, filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import PermissionDenied
 from .models import Product, Category
 from .serializers import ProductSerializer
 from .permissions import IsFarmerOwner, IsFarmerOrRetailer, IsOrderOwner, ReadOnly
+
+from rest_framework.response import Response
+
+
+from rest_framework.decorators import action
 
 class CategoryViewSet(viewsets.ModelViewSet):
     """
@@ -99,6 +104,12 @@ class ProductViewSet(viewsets.ModelViewSet):
     # Allow ordering
     ordering_fields = ["price", "created_at"]
 
+    # Filter by farmer so each user only sees their own products in default list
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Product.objects.all()
+        return Product.objects.filter(farmer=self.request.user)
+
     def perform_create(self, serializer):
         """
         Only allow farmers to create products.
@@ -119,3 +130,22 @@ class ProductViewSet(viewsets.ModelViewSet):
         elif self.action == "create":
             return [permissions.IsAuthenticated(), IsFarmerUser()]
         return [permissions.AllowAny()]
+    
+
+# class ProductViewSet(viewsets.ModelViewSet):
+#     queryset = Product.objects.all()
+#     serializer_class = ProductSerializer
+
+    # ✅ Custom action for slug-based retrieval
+    @action(detail=False, methods=['get'], url_path='by-slug/(?P<slug>[^/.]+)')
+    def by_slug(self, request, slug=None):
+        """
+        Return all products that share the same slug (case-insensitive).
+        This allows multiple farmers to sell similar products.
+        """
+        products = Product.objects.filter(slug__iexact=slug)
+        if not products.exists():
+            return Response({"detail": "No products found for this slug."}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = self.get_serializer(products, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
