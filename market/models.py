@@ -4,7 +4,7 @@ from django.db import models
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
-from django.utils import timezone
+from datetime import date
 
 class Category(models.Model):
     name = models.CharField(max_length=80, unique=True)
@@ -35,7 +35,7 @@ class Product(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, editable=False)
     description = models.TextField(blank=True)
-    harvest_date = models.DateField(default=timezone.now)
+    harvest_date = models.DateField(default=date.today)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     stock = models.DecimalField(max_digits=10, decimal_places=2)  # Allows fractional units

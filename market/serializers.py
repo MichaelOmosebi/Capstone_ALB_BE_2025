@@ -140,6 +140,7 @@ class ProductSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Stock must be at least 1.")
         return value
     
+    
     def to_representation(self, instance):
         """
         Show category name and slug in response.

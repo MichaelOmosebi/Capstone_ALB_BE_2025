@@ -87,8 +87,15 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
+from rest_framework import viewsets, permissions, filters, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from market.models import Product
+from market.serializers import ProductSerializer
+from .permissions import IsFarmerUser, IsFarmerOwner, IsFarmerOrReadOnly
+
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.filter(is_active=True)
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsFarmerOrReadOnly]
 
@@ -104,48 +111,55 @@ class ProductViewSet(viewsets.ModelViewSet):
     # Allow ordering
     ordering_fields = ["price", "created_at"]
 
-    # Filter by farmer so each user only sees their own products in default list
-    def get_queryset(self):
-        if self.request.user.is_staff:
-            return Product.objects.all()
-        return Product.objects.filter(farmer=self.request.user)
-
-    def perform_create(self, serializer):
-        """
-        Only allow farmers to create products.
-        If the logged-in user is not a farmer, raise a permission error.
-        """
-        if self.request.user.role != "farmer":
-            raise PermissionDenied("Only farmers can create products.")
-        serializer.save(farmer=self.request.user)
-
     def get_permissions(self):
         """
-        - Update/Delete → Only farmer-owner
-        - Create → Only authenticated farmers
         - List/Retrieve → Anyone
+        - Create → Authenticated farmers
+        - Update/Delete → Owner farmer
+        - my-products → Authenticated farmers only
         """
-        if self.action in ["update", "partial_update", "destroy"]:
+        if self.action in ['create']:
+            return [permissions.IsAuthenticated(), IsFarmerUser()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
             return [permissions.IsAuthenticated(), IsFarmerOwner()]
-        elif self.action == "create":
+        elif self.action == 'my_products':
             return [permissions.IsAuthenticated(), IsFarmerUser()]
         return [permissions.AllowAny()]
-    
 
-# class ProductViewSet(viewsets.ModelViewSet):
-#     queryset = Product.objects.all()
-#     serializer_class = ProductSerializer
+    def get_queryset(self):
+        """
+        Default: Return all active products for list and retrieve.
+        """
+        queryset = Product.objects.filter(is_active=True)
 
-    # ✅ Custom action for slug-based retrieval
-    @action(detail=False, methods=['get'], url_path='by-slug/(?P<slug>[^/.]+)')
+        # Optional filtering
+        category = self.request.query_params.get('category')
+        if category:
+            queryset = queryset.filter(category__iexact=category)
+
+        owner = self.request.query_params.get('owner')
+        if owner:
+            queryset = queryset.filter(owner__id=owner)
+
+        return queryset
+
+    @action(detail=False, methods=['get'], url_path='my-products')
+    def my_products(self, request):
+        """
+        Custom endpoint for farmers to view only their products.
+        URL: /api/market/my-products/
+        """
+        products = Product.objects.filter(farmer=request.user, is_active=True)
+        serializer = self.get_serializer(products, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='by-name/(?P<slug>[^/.]+)')
     def by_slug(self, request, slug=None):
         """
         Return all products that share the same slug (case-insensitive).
-        This allows multiple farmers to sell similar products.
         """
-        products = Product.objects.filter(slug__iexact=slug)
+        products = Product.objects.filter(slug__iexact=slug, is_active=True)
         if not products.exists():
-            return Response({"detail": "No products found for this slug."}, status=status.HTTP_404_NOT_FOUND)
-        
+            return Response({"detail": "No products found with this slug."}, status=status.HTTP_404_NOT_FOUND)
         serializer = self.get_serializer(products, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
