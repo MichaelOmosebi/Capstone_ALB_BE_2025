@@ -1,14 +1,13 @@
-from rest_framework import generics, permissions, status
+from rest_framework import viewsets, status, permissions
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied
-from django.shortcuts import get_object_or_404
+from django.db import transaction
 from .models import Order
 from .serializers import OrderSerializer, OrderStatusUpdateSerializer
-from rest_framework.exceptions import ValidationError
+from wallet.models import Wallet
 
-# ✅ Create new order
-# Buyer-facing endpoints
-class OrderListCreateAPIView(generics.ListCreateAPIView):
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -18,46 +17,36 @@ class OrderListCreateAPIView(generics.ListCreateAPIView):
             return Order.objects.all()
         return Order.objects.filter(buyer=user)
 
-# ✅ Order details (retrieve, update, delete by buyer)
-class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_staff or user.is_superuser:
-            return Order.objects.all()
-        return Order.objects.filter(buyer=user)
-
-    def perform_update(self, serializer):
-        # Prevent changing buyer or status here
-        if 'status' in self.request.data:
-            raise PermissionDenied("You cannot update order status here.")
+    def perform_create(self, serializer):
         serializer.save()
 
-# ✅ Cancel order (only buyer can cancel)
-from rest_framework.views import APIView
+    @action(detail=False, methods=["get"], url_path="my-orders")
+    def my_orders(self, request):
+        orders = Order.objects.filter(buyer=request.user)
+        serializer = self.get_serializer(orders, many=True)
+        return Response(serializer.data)
 
-class OrderCancelAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, pk):
-        order = Order.objects.get(pk=pk, buyer=request.user)
-        serializer = OrderSerializer()
+    @action(detail=True, methods=["post"], url_path="cancel")
+    @transaction.atomic
+    def cancel_order(self, request, pk=None):
         try:
-            serializer.cancel_order(order)
-        except ValidationError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"detail": "Order canceled and stock restored."}, status=status.HTTP_200_OK)
+            order = Order.objects.get(pk=pk, buyer=request.user)
+        except Order.DoesNotExist:
+            return Response({"detail": "Order not found."}, status=status.HTTP_404_NOT_FOUND)
 
-# ✅ Admin/Staff update status
-class OrderStatusUpdateAPIView(generics.UpdateAPIView):
-    queryset = Order.objects.all()
-    serializer_class = OrderStatusUpdateSerializer
-    permission_classes = [permissions.IsAuthenticated]
+        if order.status != "pending":
+            return Response({"detail": "Only pending orders can be canceled."}, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_staff or user.is_superuser:
-            return Order.objects.all()
-        return Order.objects.filter(buyer=user)
+        # Restore stock
+        for item in order.items.all():
+            product = item.product
+            product.stock += item.quantity
+            product.save()
+
+        # Refund buyer
+        buyer_wallet = Wallet.objects.get(user=request.user)
+        buyer_wallet.credit(order.total_amount, description=f"Refund for Order #{order.id}")
+
+        order.status = "canceled"
+        order.save()
+        return Response({"detail": "Order canceled and stock restored."})

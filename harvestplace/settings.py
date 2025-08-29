@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'market',
     'inventory',
     'orders',
+    'wallet',
 ]
 
 MIDDLEWARE = [
