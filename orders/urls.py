@@ -1,14 +1,16 @@
-from django.urls import path
-from .views import (
-    OrderListCreateAPIView,
-    OrderDetailView,
-    OrderCancelAPIView,
-    OrderStatusUpdateAPIView
-)
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import OrderViewSet
+
+router = DefaultRouter()
+router.register(r'orders', OrderViewSet, basename='order')
 
 urlpatterns = [
-    path('orders/', OrderListCreateAPIView.as_view(), name='order-list'),
-    path('orders/<int:pk>/', OrderDetailView.as_view(), name='order-detail'),
-    path('orders/<int:pk>/cancel/', OrderCancelAPIView.as_view(), name='order-cancel'),
-    path('orders/<int:pk>/status/', OrderStatusUpdateAPIView.as_view(), name='order-status-update'),
+    path('', include(router.urls)),
 ]
+
+# POST	/api/orders/	Create new order
+# GET	/api/orders/	List all user’s orders
+# GET	/api/orders/my-orders/	Get logged-in user orders
+# POST	/api/orders/{id}/cancel/	Cancel an order
+# PATCH	/api/orders/{id}/	Update status (admin only)
