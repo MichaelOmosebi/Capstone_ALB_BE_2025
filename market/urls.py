@@ -15,19 +15,19 @@ urlpatterns = [
 ]
 
 # List all products
-# GET /api/market/products/
+# ---GET /api/market/products/
 
 # Retrieve single product by ID
-# GET /api/market/products/<id>/
+# --- GET /api/market/products/<id>/
 
 # Create product (farmer only)
-# POST /api/market/products/
+# --- POST /api/market/products/
 
 # Update/Delete product (owner farmer only)
-# PUT/PATCH/DELETE /api/market/products/<id>/
+# --- PUT/PATCH/DELETE /api/market/products/<id>/
 
 # Farmer’s own products
-# GET /api/market/products/my-products/
+# --- GET /api/market/products/my-products/
 
 # Get products by name (slug)
-# GET /api/market/products/by-name/<slug>/
+# --- GET /api/market/products/by-name/<slug>/

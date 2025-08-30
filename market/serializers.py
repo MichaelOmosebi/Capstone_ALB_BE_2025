@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import Product, Category
 from rest_framework.exceptions import PermissionDenied
 from django.core.exceptions import ValidationError
+from rest_framework import serializers
+from .models import Category, Product
 
 from datetime import date
 
@@ -9,68 +11,10 @@ from datetime import date
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name']
-
-# class ProductSerializer(serializers.ModelSerializer):
-#     in_stock = serializers.ReadOnlyField()
-
-#     class Meta:
-#         model = Product
-#         fields = ['id', 'farmer', 'name', 'description', 'price', 'stock', 'location', 'category', 'image', 'in_stock', 'created_at', 'updated_at']
-#         read_only_fields = ['farmer', 'created_at', 'updated_at']
-
-
-    # def create(self, validated_data):
-    #     user = self.context["request"].user
-    #     if user.role != "farmer":
-    #         raise PermissionDenied("Only farmers can create products.")
-    #     validated_data["farmer"] = user
-    #     return super().create(validated_data)
-    
-
-from rest_framework import serializers
-from .models import Category, Product
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
         fields = ['id', 'name', 'slug']
 
 
-# class ProductSerializer(serializers.ModelSerializer):
-#     farmer = serializers.ReadOnlyField(source='farmer.username')
-#     category_name = serializers.ReadOnlyField(source='category.name')
 
-#     class Meta:
-#         model = Product
-#         fields = [
-#             'id', 'name', 'slug', 'description', 'price', 'discount_price',
-#             'stock', 'unit', 'location', 'category', 'category_name',
-#             'image', 'tags', 'is_active', 'in_stock', 'farmer',
-#             'created_at', 'updated_at'
-#         ]
-#         read_only_fields = ['slug', 'in_stock', 'farmer']
-
-# class ProductSerializer(serializers.ModelSerializer):
-#     category = serializers.SlugRelatedField(
-#         slug_field='slug',  # Or use 'name' if preferred
-#         queryset=Category.objects.all()
-#     )
-
-#     class Meta:
-#         model = Product
-#         fields = ['id', 'name', 'slug', 'harvest_date', 'price', 'description', 'category', 'stock']
-#         read_only_fields = ['slug']
-
-#     def create(self, validated_data):
-#         validated_data['farmer'] = self.context['request'].user
-#         return super().create(validated_data)
-
-#     def update(self, instance, validated_data):
-#         # Ensure slug is not changed manually
-#         if 'slug' in validated_data:
-#             validated_data.pop('slug')
-#         return super().update(instance, validated_data)
 class CategoryField(serializers.SlugRelatedField):
     """
     Custom field to allow lookup by slug OR name for category.
@@ -83,6 +27,7 @@ class CategoryField(serializers.SlugRelatedField):
                 return self.get_queryset().get(name__iexact=data)
             except Category.DoesNotExist:
                 self.fail('does_not_exist', slug_name=self.slug_field, value=data)
+
 
 
 class ProductSerializer(serializers.ModelSerializer):

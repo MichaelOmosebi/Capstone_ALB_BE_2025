@@ -6,4 +6,3 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('profile/', ProfileRetrieveUpdateView.as_view(), name='profile'),
 ]
-# --- IGNORE ---
