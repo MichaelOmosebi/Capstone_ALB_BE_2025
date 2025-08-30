@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/accounts/', include('accounts.urls')),  # Include accounts app URLs
     path('api/market/', include('market.urls')),
-    path('api/orders/', include('orders.urls')),
+    path('api/', include('orders.urls')),
     path('api/wallet/', include('wallet.urls')),  # Include wallet app URLs
 ]
 

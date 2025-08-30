@@ -54,7 +54,7 @@ class OrderSerializer(serializers.ModelSerializer):
             total += price * quantity
 
         # Wallet logic
-        buyer_wallet = Wallet.objects.get(user=user)
+        buyer_wallet, created = Wallet.objects.get_or_create(user=user)
         if buyer_wallet.balance < total:
             raise serializers.ValidationError("Insufficient wallet balance.")
 

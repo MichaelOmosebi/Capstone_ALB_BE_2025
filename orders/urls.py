@@ -2,15 +2,27 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import OrderViewSet
 
-router = DefaultRouter()
-router.register(r'orders', OrderViewSet, basename='order')
+# router = DefaultRouter()
+# router.register(r'orders', OrderViewSet, basename='orders')
+
+# urlpatterns = [
+#     path('', include(router.urls)),
+# ]
+
+# GET /orders/ → list
+# POST /orders/ → create
+# GET /orders/{id}/ → retrieve
+# PUT/PATCH /orders/{id}/ → update
+# DELETE /orders/{id}/ → destroy
+# GET /orders/my-orders/ → custom action
+# POST /orders/{id}/cancel/ → custom action
+
+order_list = OrderViewSet.as_view({'get': 'list', 'post': 'create'})
+order_detail = OrderViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('orders/', order_list, name='order-list'),
+    path('orders/<int:pk>/', order_detail, name='order-detail'),
+    path('orders/my-orders/', OrderViewSet.as_view({'get': 'my_orders'}), name='my-orders'),
+    path('orders/<int:pk>/cancel/', OrderViewSet.as_view({'post': 'cancel_order'}), name='order-cancel'),
 ]
-
-# POST	/api/orders/	Create new order
-# GET	/api/orders/	List all user’s orders
-# GET	/api/orders/my-orders/	Get logged-in user orders
-# POST	/api/orders/{id}/cancel/	Cancel an order
-# PATCH	/api/orders/{id}/	Update status (admin only)
