@@ -1,10 +1,10 @@
 # HarvestPlace - Agriculture Marketplace API (MVP)
 
-HarvestPlace is a **backend API** for a simple agricultural marketplace. Farmers can list postharvest products, and retailers can browse and place orders quickly and effectively.
+HarvestPlace is a ***backend API*** for a simple agricultural marketplace. Farmers can list postharvest products, and retailers can browse and place orders quickly and effectively.
 
-It aims to address the global challenge on Food Loss, and reducing the impact of this on the welfare of Nigerian farmers.
+It aims to address the global challenge of ***Food Loss***, reducing its impact on Nigerian farmers' welfare.
 
-This MVP demonstrates **role-based access, authentication, and basic CRUD operations** using Django & Django REST Framework.
+This MVP demonstrates ***role-based access, authentication, and basic CRUD operations*** using Django & Django REST Framework.
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -35,6 +35,11 @@ This MVP demonstrates **role-based access, authentication, and basic CRUD operat
   - Users can only view their own orders
   - Delete own orders
 
+- **Wallet**
+  - Wallet is created for new users upon registration with a zero balance.
+  - Top-up is done without extra authorization (for now).
+  - User can check wallet transactions.
+
 - **Role-Based Access Control**
   - Farmers manage products
   - Retailers can only create orders
@@ -52,27 +57,41 @@ This MVP demonstrates **role-based access, authentication, and basic CRUD operat
 ## 📝 API Endpoints
 
 ### Authentication
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/register/` | POST | Create a new user (returns token) |
-| `/api-token-auth/` | POST | Login (returns token) |
+{localhost/accounts}
+| Endpoint          | Method | Description                       |
+|-------------------|--------|-----------------------------------|
+| `/register/`      | POST   | Create a new user (returns token) |
+| `/api-token-auth/`| POST   | Login (returns token)             |
 
-### Products
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/products/` | GET | List all products |
-| `/products/` | POST | Create product (farmers only) |
-| `/products/{id}/` | GET | Retrieve product details |
-| `/products/{id}/` | PUT/PATCH | Update product (owner only) |
-| `/products/{id}/` | DELETE | Delete product (owner only) |
+### Market
+{localhost/market}
+| Endpoint          | Method     | Description                    |
+|-------------------|------------|--------------------------------|
+| `/products/`      | GET        | List all products              |
+| `/products/`      | POST       | Create product (farmers only)  |
+| `/products/{id}/` | GET        | Retrieve product details       |
+| `/products/{id}/` | PUT/PATCH  | Update product (farmer only)   |
+| `/products/{id}/` | DELETE     | Delete product (farmer only)   |
+| `/categories/`    | GET        | List categories (Users)        |
+| `/categories/`    | POST       | Create categories (Admin only) |
 
 ### Orders
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/orders/` | GET | List user’s orders |
-| `/orders/` | POST | Create order (both roles) |
-| `/orders/{id}/` | GET | Retrieve order details |
-| `/orders/{id}/` | DELETE | Delete order (owner only) |
+{localhost/}
+| Endpoint        | Method  | Description               |
+|-----------------|---------|---------------------------|
+| `/orders/`      | GET     | List user’s orders        |
+| `/orders/`      | POST    | Create order (both roles) |
+| `/orders/{id}/` | GET     | Retrieve order details    |
+| `/orders/{id}/` | DELETE  | Cancel order (owner only) |
+
+### Wallet
+{localhost/wallet}
+| Endpoint        | Method  | Description                               |
+|-----------------|---------|-------------------------------------------|
+| `/`             | GET     | Show user wallet balance                  |
+| `/deposits/`    | POST    | Make deposits to fund wallet (User)       |
+| `/transactions/`| GET     | Retrieve users' history of transactions   |
+
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -90,8 +109,11 @@ source .venv/bin/activate  # Linux/Mac
 3. **Install Dependencies**
 pip install -r requirements.txt
 
-4. **Run Migrations & Run Server**
-pip install -r requirements.txt
+4. **Run Migrations**
+python manage.py migrate
+
+# Create superuser & Run Server
+python manage.py createsuperuser
 python manage.py runserver
 
 5. **Run Test**
@@ -107,7 +129,7 @@ POST /register/
 ```    "email": "john@example.com",```
 ```    "password": "pass1234",```
 ```    "role": "farmer",```
-```    "location": "Lagos"```
+```    "location": "Akure"```
 ```}```
 
 POST /api-token-auth/
@@ -127,9 +149,32 @@ Authorization: Token <### ### ###>
 ```    "image": <file>```
 ```}```
 
+Create Orders (Retailer & Farmer)
+POST /orders/
+Authorization: Token <### ### ###>
+```{```
+```  "items": [```
+```    {```
+```      "product": 3,```
+```      "quantity": 2```
+```    },```
+```    {```
+```      "product": 5,```
+```      "quantity": 1```
+```    }```
+```  ]```
+```}```
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+✅ Sample Workflow
+- Register as farmer or retailer
+- Login and copy the token
+- Use token to create products (farmer) or place orders (retailer)
+
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## License
-________________________________________________________
+____________
 MIT License
-________________________________________________________
+____________
