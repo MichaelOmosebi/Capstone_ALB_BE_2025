@@ -57,14 +57,14 @@ This MVP demonstrates ***role-based access, authentication, and basic CRUD opera
 ## 📝 API Endpoints
 
 ### Authentication
-{localhost/accounts}
+{localhost:8000/accounts}
 | Endpoint          | Method | Description                       |
 |-------------------|--------|-----------------------------------|
 | `/register/`      | POST   | Create a new user (returns token) |
 | `/api-token-auth/`| POST   | Login (returns token)             |
 
 ### Market
-{localhost/market}
+{localhost:8000/market}
 | Endpoint          | Method     | Description                    |
 |-------------------|------------|--------------------------------|
 | `/products/`      | GET        | List all products              |
@@ -76,7 +76,7 @@ This MVP demonstrates ***role-based access, authentication, and basic CRUD opera
 | `/categories/`    | POST       | Create categories (Admin only) |
 
 ### Orders
-{localhost/}
+{localhost:8000/}
 | Endpoint        | Method  | Description               |
 |-----------------|---------|---------------------------|
 | `/orders/`      | GET     | List user’s orders        |
@@ -85,7 +85,7 @@ This MVP demonstrates ***role-based access, authentication, and basic CRUD opera
 | `/orders/{id}/` | DELETE  | Cancel order (owner only) |
 
 ### Wallet
-{localhost/wallet}
+{localhost:8000/wallet}
 | Endpoint        | Method  | Description                               |
 |-----------------|---------|-------------------------------------------|
 | `/`             | GET     | Show user wallet balance                  |
