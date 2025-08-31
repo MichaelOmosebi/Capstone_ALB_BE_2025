@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-l)r@ohd0=)bp5v+^jt1_xo)2=o6*pa5ji9@bj495&g+-379&g('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -157,3 +157,64 @@ REST_FRAMEWORK = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media' # ----- for profile pictures
+
+
+
+
+######################################################
+# -- ADDITIONAL SECURITY SETTINGS FOR HARVESTPLACE API
+######################################################
+
+# --- Additional settings for the project can be added here, such as logging, email configuration, etc.
+# settings.py — Browser-Side Security Headers
+# SECURE_BROWSER_XSS_FILTER = True
+# X_FRAME_OPTIONS = 'DENY'
+# SECURE_CONTENT_TYPE_NOSNIFF = True
+
+
+# # settings.py — Secure Cookies
+# CSRF_COOKIE_SECURE = True #--- Ensures that the CSRF cookie is only sent over HTTPS
+# SESSION_COOKIE_SECURE = True #--- Ensures that the session cookie is only sent over HTTPS
+
+# # settings.py — Content Security Policy (CSP)
+# # CSP_DEFAULT_SRC = ("'self'",)
+# # CSP_SCRIPT_SRC = ("'self'",) # Allows scripts from the same origin while also allowing trusted CDNs another example: 'https://trusted.cdn.com'
+# # CSP_STYLE_SRC = ("'self'",) # Allows styles from the same origin while also allowing Google Fonts. Another example is to include: 'https://fonts.googleapis.com'
+# # CSP_IMG_SRC = ("'self'", 'data:') # Allows images from the same origin and data URIs
+# # CSP_FONT_SRC = ("'self'",)
+# # -------------- Above is the old way of setting CSP, which is now deprecated in favor of the new way below ----------------
+# from csp.constants import SELF
+
+# CONTENT_SECURITY_POLICY = {
+#     "EXCLUDE_URL_PREFIXES": ["/admin"],
+#     "DIRECTIVES": {
+#         "default-src": [SELF, "*.example.com"],
+#         "script-src": [SELF, "js.cdn.com/example/"],
+#         "img-src": [SELF, "data:", "example.com"],
+#     },
+# }
+
+# # Security Settings to Adjust:
+# # SECURE_SSL_REDIRECT: Set to True to redirect all non-HTTPS requests to HTTPS.
+# # SECURE_HSTS_SECONDS: Set an appropriate value (e.g., 31536000 for one year) to instruct browsers to only access the site via HTTPS for the specified time.
+# # SECURE_HSTS_INCLUDE_SUBDOMAINS and SECURE_HSTS_PRELOAD: Set to True to include all subdomains in the HSTS policy and to allow preloading.
+# # SECURE_HSTS_PRELOAD: Set to True to allow preloading of the HSTS policy.
+# # --- Note: Ensure that your web server is configured to handle HTTPS requests properly.
+
+# SECURE_HSTS_SECONDS = 31536000  # One year
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
+# SECURE_SSL_REDIRECT = True  # Redirect all HTTP requests to HTTPS
+
+# # Ensure secure cookies
+# SESSION_COOKIE_SECURE = True  # Ensure session cookies are only sent over HTTPS
+# CSRF_COOKIE_SECURE = True  # Ensure CSRF cookies are only sent over HTTPS
+
+# # Implement secure headers
+# SECURE_BROWSER_XSS_FILTER = True  # Enable the browser's XSS filter
+# SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent the browser from MIME-sniffing a response away from the declared content type
+# X_FRAME_OPTIONS = 'DENY'  # Prevent the site from being framed to protect against clickjacking attacks --- 
+
+
+# # LibraryProject/LibraryProject/settings.py doesn't contain: ["SECURE_PROXY_SSL_HEADER", "HTTP_X_FORWARDED_PROTO"
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # Uncomment if using a reverse proxy that sets this header
