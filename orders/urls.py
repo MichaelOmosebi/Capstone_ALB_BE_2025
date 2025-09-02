@@ -21,8 +21,8 @@ order_list = OrderViewSet.as_view({'get': 'list', 'post': 'create'})
 order_detail = OrderViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})
 
 urlpatterns = [
-    path('orders/', order_list, name='order-list'),
-    path('orders/<int:pk>/', order_detail, name='order-detail'),
-    path('orders/my-orders/', OrderViewSet.as_view({'get': 'my_orders'}), name='my-orders'),
-    path('orders/<int:pk>/cancel/', OrderViewSet.as_view({'post': 'cancel_order'}), name='order-cancel'),
+    path('/', order_list, name='order-list'),
+    path('/<int:pk>/', order_detail, name='order-detail'),
+    path('/my-orders/', OrderViewSet.as_view({'get': 'my_orders'}), name='my-orders'),
+    path('/<int:pk>/cancel/', OrderViewSet.as_view({'post': 'cancel_order'}), name='order-cancel'),
 ]

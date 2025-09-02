@@ -76,12 +76,13 @@ This MVP demonstrates ***role-based access, authentication, and basic CRUD opera
 | `/categories/`    | POST       | Create categories (Admin only) |
 
 ### Orders
-{localhost:8000/}
+{localhost:8000/orders}
 | Endpoint        | Method  | Description               |
 |-----------------|---------|---------------------------|
-| `/orders/`      | GET     | List user’s orders        |
-| `/orders/`      | POST    | Create order (both roles) |
-| `/orders/{id}/` | GET     | Retrieve order details    |
+| `/`             | GET     | List user’s orders        |
+| `/`             | POST    | Create order (both roles) |
+| `/{id}/`        | GET     | Retrieve orders           |
+| `/{id}/`        | PUT     | Update orders             |
 | `/orders/{id}/` | DELETE  | Cancel order (owner only) |
 
 ### Wallet

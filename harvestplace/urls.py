@@ -20,14 +20,14 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-from harvestplace.harvestplace.views import WelcomeAPIView
+from harvestplace.views import WelcomeAPIView
 
 urlpatterns = [
     # path('', WelcomeAPIView.as_view(), name='api-welcome'),
     path('admin/', admin.site.urls),
     path('api/accounts/', include('accounts.urls')),  # Include accounts app URLs
     path('api/market/', include('market.urls')),
-    path('api/', include('orders.urls')),
+    path('api/orders/', include('orders.urls')),
     path('api/wallet/', include('wallet.urls')),  # Include wallet app URLs
 ]
 
