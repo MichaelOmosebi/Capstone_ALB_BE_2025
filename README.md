@@ -81,9 +81,10 @@ This MVP demonstrates ***role-based access, authentication, and basic CRUD opera
 |-----------------|---------|---------------------------|
 | `/`             | GET     | List user’s orders        |
 | `/`             | POST    | Create order (both roles) |
-| `/{id}/`        | GET     | Retrieve orders           |
+| `/{id}/`        | GET     | Retrieve specific order   |
+| `/my-orders/`   | GET     | Retrieve all orders       |
 | `/{id}/`        | PUT     | Update orders             |
-| `/orders/{id}/` | DELETE  | Cancel order (owner only) |
+| `/{id}/cancel/` | DELETE  | Cancel order (owner only) |
 
 ### Wallet
 {localhost:8000/wallet}
