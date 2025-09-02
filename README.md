@@ -67,12 +67,12 @@ This MVP demonstrates ***role-based access, authentication, and basic CRUD opera
 {localhost:8000/market}
 | Endpoint          | Method     | Description                    |
 |-------------------|------------|--------------------------------|
-| `/products/`      | GET        | List all products              |
+| `/products/`      | GET        | List all products (No auth)    |
 | `/products/`      | POST       | Create product (farmers only)  |
 | `/products/{id}/` | GET        | Retrieve product details       |
 | `/products/{id}/` | PUT/PATCH  | Update product (farmer only)   |
 | `/products/{id}/` | DELETE     | Delete product (farmer only)   |
-| `/categories/`    | GET        | List categories (Users)        |
+| `/categories/`    | GET        | List categories (No auth)      |
 | `/categories/`    | POST       | Create categories (Admin only) |
 
 ### Orders
